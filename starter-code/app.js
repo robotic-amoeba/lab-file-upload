@@ -96,6 +96,28 @@ passport.use('local-signup', new LocalStrategy(
     });
   }));
 
+  passport.use('local-post', new LocalStrategy(
+    (req, username, password, next) => {
+      console.log(req, username, password)
+      const {
+        originalname,
+        path
+      } = req.file;
+
+      let newPost = new Post({
+        content: req.body.content,
+        creatorId: "anId",
+        picPath: path,
+        picName: originalName
+      })
+
+      newPost.save((err) => {
+        if (err) { next(null, false, { message: newPost.errors }) }
+            return next(null, newPost);
+      })
+    }
+  ))
+
 app.use(flash());
 app.use(passport.initialize());
 app.use(passport.session());
@@ -107,8 +129,10 @@ app.use(express.static(path.join(__dirname, 'public')));
 
 const index = require('./routes/index');
 const authRoutes = require('./routes/authentication');
+const postRoutes = require('./routes/post')
 app.use('/', index);
 app.use('/', authRoutes);
+app.use('/', postRoutes)
 
 // catch 404 and forward to error handler
 app.use((req, res, next) => {
